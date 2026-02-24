@@ -207,7 +207,7 @@ def _inject_spoofing(n, seed):
 #         })
 #     return records
 
-def inject_pump_and_dump(n_clusters=50, seed=None):
+def _inject_pump_and_dump(n_clusters=50, seed=None):
     """
     Generate synthetic pump-and-dump trade records.
 
@@ -372,7 +372,7 @@ def load_external_data(filepath):
     Returns:
         pd.DataFrame with unified schema
     """
-    
+
     if not os.path.exists(filepath):
         raise FileNotFoundError(f"Data file not found: {filepath}")
 
