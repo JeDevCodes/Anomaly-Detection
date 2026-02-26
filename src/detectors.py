@@ -155,9 +155,7 @@ def _mad_detector(raw_features):
     return flags
 
 
-# ═══════════════════════════════════════════════
 #  ML-BASED DETECTORS
-# ═══════════════════════════════════════════════
 
 def _run_isolation_forest(scaled_features):
     """
@@ -233,11 +231,9 @@ def _run_lof(scaled_features):
         "threshold": config.LOF_CONTAMINATION,
         "feature_importances": importances,
     }
+   
 
-
-# ═══════════════════════════════════════════════
 #  UTILITY FUNCTIONS
-# ═══════════════════════════════════════════════
 
 def _normalize_scores(raw_scores):
     """
@@ -301,9 +297,7 @@ def _compute_lof_importances(scaled_features, labels):
     return importances
 
 
-# ═══════════════════════════════════════════════
 #  SELF TEST
-# ═══════════════════════════════════════════════
 
 if __name__ == "__main__":
     from data_ingestion import get_data

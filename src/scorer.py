@@ -25,7 +25,7 @@ SCORE_COLUMNS = [
     "risk_level",
     "confidence",
     "predicted_fraud_type",
-    "explanation",
+    # "explanation",
 ]
 
 

@@ -86,7 +86,6 @@ def get_feature_matrix(df):
 
 
 # Helpers
-
 def _safe_zscore(series):
     """Compute z-score with safe handling for zero std and NaN."""
     mean_val = series.mean()
