@@ -125,9 +125,9 @@ def deduplicate_alerts(alerts):
         "risk_level": _score_to_level(g["anomaly_score"]),
         "confidence": g["confidence"],
         "predicted_fraud_type": g["predicted_fraud_type"],
-        "explanation": g["explanation"] + (
-            f" ({g['count']} related trades merged.)" if g["count"] > 1 else ""
-        ),
+        # "explanation": g["explanation"] + (
+        #     f" ({g['count']} related trades merged.)" if g["count"] > 1 else ""
+        # ),
         "trade_count": g["count"],
         "status": "NEW",
         "created_at": datetime.now(),
@@ -145,7 +145,7 @@ def _new_group(row):
         "trade_ids": [row["trade_ids"]],
         "anomaly_score": row["anomaly_score"],
         "confidence": row["confidence"],
-        "explanation": row["explanation"],
+        # "explanation": row["explanation"],
         "first_timestamp": row["timestamp"],
         "last_timestamp": row["timestamp"],
         "count": 1,
