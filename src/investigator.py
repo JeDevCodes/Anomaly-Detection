@@ -205,6 +205,7 @@ def get_feedback_by_type(feedback_log):
             "escalated": int(esc),
             "total": int(len(subset)),
             "fp_rate": round(fp / max(len(subset), 1), 4),
+            "miss_rate": round(esc / max(len(subset), 1), 4),   
         }
 
     return result

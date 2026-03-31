@@ -56,7 +56,7 @@ def engineer_features(df):
         DataFrame with all original columns + 12 feature columns
     """
     df = df.copy()
-    df["timestamp"] = pd.to_datetime(df["timestamp"])
+    # df["timestamp"] = pd.to_datetime(df["timestamp"])
 
     df = _add_transaction_features(df)
     df = _add_entity_features(df)
@@ -198,13 +198,13 @@ def _add_market_features(df):
     df["price_vs_symbol_avg"] = (df["price"] - df["_sp_mean"]) / df["_sp_std"]
 
     # Daily volume and volatility per symbol 
-    daily = df.groupby(["symbol", "_trade_date"]).agg(
+    daily = df.groupby(["symbol", "  "]).agg(
         _d_vol=("quantity", "sum"),
         _d_pstd=("price", "std"),
     ).reset_index()
     daily["_d_pstd"] = daily["_d_pstd"].fillna(0.0)
 
-    # Volume z-score: is today's volume unusual for this symbol?
+    # Volume z-score: is today's volume unusual for this   symbol?
     sym_vol = daily.groupby("symbol")["_d_vol"].agg(["mean", "std"]).reset_index()
     sym_vol.columns = ["symbol", "_sv_mean", "_sv_std"]
     sym_vol["_sv_std"] = sym_vol["_sv_std"].fillna(1.0).replace(0, 1.0)
@@ -220,13 +220,13 @@ def _add_market_features(df):
         how="left",
     )
 
-    # ── Price velocity: how fast is price changing? ──
+    # Price velocity 
     df = df.sort_values(["symbol", "timestamp"]).reset_index(drop=True)
     time_delta = df.groupby("symbol")["timestamp"].diff().dt.total_seconds()
     price_delta = df.groupby("symbol")["price"].diff()
     df["price_velocity"] = _safe_divide(price_delta, time_delta)
 
-    # ── Drop ALL temporary columns (anything starting with "_") ──
+    # Drop ALL temporary columns 
     temp_cols = [c for c in df.columns if c.startswith("_")]
     df = df.drop(columns=temp_cols)
 
@@ -241,7 +241,7 @@ def _fill_missing(df):
     return df
 
 
-# ── Self-Test ──
+# Self-Test 
 
 if __name__ == "__main__":
     from data_ingestion import get_data

@@ -9,7 +9,7 @@ sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 import config
 
 
-# ── Required columns for external data validation ──
+# Required columns for external data validation 
 REQUIRED_COLUMNS = ["timestamp", "entity_id", "symbol", "trade_type", "price", "quantity"]
 OPTIONAL_DEFAULTS = {
     "trade_id": None,
@@ -38,23 +38,23 @@ def generate_synthetic_data(n_rows=None, seed=None):
     n_fraud = int(n_rows * config.FRAUD_INJECTION_RATE)
     n_normal = n_rows - n_fraud
 
-    # ── Generate normal trades ──
+    # Generate normal trades 
     normal_df = _generate_normal_trades(n_normal, seed)
 
-    # ── Inject fraud patterns ──
+    # Inject fraud patterns
     fraud_df = _generate_fraud_trades(n_fraud, seed)
 
-    # ── Combine and shuffle ──
+    #  Combine and shuffle
     df = pd.concat([normal_df, fraud_df], ignore_index=True)
     df = df.sample(frac=1, random_state=seed).reset_index(drop=True)
 
-    # ── Assign trade IDs ──
+    # Assign trade IDs
     df["trade_id"] = [f"TXN-{i:06d}" for i in range(len(df))]
 
-    # ── Calculate amount ──
+    # Calculate amount 
     df["amount"] = df["price"] * df["quantity"]
 
-    # ── Sort by timestamp ──
+    # Sort by timestamp 
     df = df.sort_values("timestamp").reset_index(drop=True)
 
     return df
@@ -167,8 +167,8 @@ def _inject_spoofing(n, seed):
             "symbol": symbol,
             "trade_type": np.random.choice(["buy", "sell"]),
             "price": round(base_price * np.random.uniform(0.98, 1.02), 2),
-            "quantity": int(np.random.lognormal(mean=8, sigma=0.3)),  # very large
-            "is_cancelled": True,  # ALWAYS CANCELLED — key signal
+            "quantity": int(np.random.lognormal(mean=8, sigma=0.3)),
+            "is_cancelled": True, 
             "counterparty": f"ENT-{np.random.randint(51, 200):04d}",
             "is_fraud": True,
             "fraud_type": "spoofing",
@@ -224,7 +224,7 @@ def _inject_pump_and_dump(n_clusters=50, seed=None):
 
     for _ in range(n_clusters):
 
-        # --- consistent actor & symbol per cluster ---
+        # consistent actor & symbol per cluster
         entity = f"ENT-{np.random.randint(1, 30):04d}"
         symbol = np.random.choice(SYMBOLS[:3])
 
@@ -234,16 +234,16 @@ def _inject_pump_and_dump(n_clusters=50, seed=None):
             "TSLA": 245
         }[symbol]
 
-        # --- cluster time base ---
+        #  cluster time base 
         day_offset = np.random.randint(0, 30)
         hour_offset = np.random.uniform(0.5, 5)
 
-        # --- escalating price increments ---
+        #  escalating price increments 
         price_increments = np.cumsum(
             np.random.uniform(0.02, 0.05, size=3)
         )
 
-        # --- BUY PHASE (Pump) ---
+        #  BUY PHASE
         for step in range(3):
 
             timestamp = base_time + timedelta(
@@ -266,7 +266,7 @@ def _inject_pump_and_dump(n_clusters=50, seed=None):
                 "fraud_type": "pump_and_dump",
             })
 
-        # --- DUMP PHASE (Large Sell-Off) ---
+        # DUMP PHASE 
         dump_timestamp = base_time + timedelta(
             days=day_offset,
             hours=hour_offset + 0.2
@@ -301,7 +301,7 @@ def _inject_insider_trading(n, seed):
         symbol = "NVDA"
         base_price = 720
 
-        # cluster trades in last hour of trading day (suspicious timing)
+        # cluster trades in last hour of trading day
         time_offset = timedelta(
             hours=np.random.uniform(5.5, 6.5),  # end of day
             days=np.random.choice([10, 11, 12])  # cluster on specific days
@@ -312,7 +312,7 @@ def _inject_insider_trading(n, seed):
             "entity_id": entity,
             "symbol": symbol,
             "trade_type": "buy",  # insiders typically buy before good news
-            "price": round(base_price * np.random.uniform(0.99, 1.01), 2),
+            "price": round(base_price * np.random.uniform(0.99, 1.02), 2),
             "quantity": int(np.random.lognormal(mean=7, sigma=0.8)),  # large
             "is_cancelled": False,
             "counterparty": f"ENT-{np.random.randint(51, 200):04d}",
@@ -322,12 +322,54 @@ def _inject_insider_trading(n, seed):
     return records
 
 
-def _inject_layering(n, seed):
+# def _inject_layering(n, seed):
+#     """Multiple orders at different price levels, then cancelled."""
+#     records = []
+#     base_time = datetime(2024, 1, 15, 9, 30, 0)
+
+#     for i in range(n):
+#         entity = f"ENT-{np.random.randint(1, 40):04d}"
+#         symbol = np.random.choice(SYMBOLS)
+#         base_price = {
+#             "AAPL": 182, "MSFT": 405, "TSLA": 245, "GOOG": 141,
+#             "AMZN": 178, "META": 390, "NVDA": 680, "JPM": 195
+#         }[symbol]
+#         day = np.random.randint(0, 30)
+
+#         # price at different levels — stacked
+#         level = (i % 5) + 1
+#         price = base_price + level * 0.50
+
+#         records.append({
+#             "timestamp": base_time + timedelta(
+#                 hours=np.random.uniform(0, 6.5),
+#                 days=day,
+#                 seconds=level  # rapid succession
+#             ),
+#             "entity_id": entity,
+#             "symbol": symbol,
+#             "trade_type": "sell",
+#             "price": round(price, 2),
+#             "quantity": int(level * np.random.lognormal(mean=5, sigma=0.5)),  # increasing size
+#             "is_cancelled": True,  # all cancelled
+#             "counterparty": f"ENT-{np.random.randint(51, 200):04d}",
+#             "is_fraud": True,
+#             "fraud_type": "layering",
+#         })
+#     return records
+
+
+def _inject_layering(n_clusters=10, seed=None):
     """Multiple orders at different price levels, then cancelled."""
+
     records = []
     base_time = datetime(2024, 1, 15, 9, 30, 0)
 
-    for i in range(n):
+    if seed is not None:
+        np.random.seed(seed)
+
+    for _ in range(n_clusters):
+
         entity = f"ENT-{np.random.randint(1, 40):04d}"
         symbol = np.random.choice(SYMBOLS)
         base_price = {
@@ -335,31 +377,34 @@ def _inject_layering(n, seed):
             "AMZN": 178, "META": 390, "NVDA": 680, "JPM": 195
         }[symbol]
         day = np.random.randint(0, 30)
+        hour = np.random.uniform(1, 6)
+        
 
-        # price at different levels — stacked
-        level = (i % 5) + 1
-        price = base_price + level * 0.50
+        for i in range(4):
 
-        records.append({
-            "timestamp": base_time + timedelta(
-                hours=np.random.uniform(0, 6.5),
-                days=day,
-                seconds=level  # rapid succession
-            ),
-            "entity_id": entity,
-            "symbol": symbol,
-            "trade_type": "sell",
-            "price": round(price, 2),
-            "quantity": int(level * np.random.lognormal(mean=5, sigma=0.5)),  # increasing size
-            "is_cancelled": True,  # all cancelled
-            "counterparty": f"ENT-{np.random.randint(51, 200):04d}",
-            "is_fraud": True,
-            "fraud_type": "layering",
-        })
+            level = i + 1
+            price = base_price + level * 0.50
+
+            records.append({
+                "timestamp": base_time + timedelta(
+                    hours=hour,
+                    days=day,
+                    seconds=level*10
+                ),
+                "entity_id": entity,
+                "symbol": symbol,
+                "trade_type": "sell",
+                "price": round(price, 2),
+                "quantity": int(level * np.random.lognormal(mean=5, sigma=0.5)),  # increasing size
+                "is_cancelled": True,  # all cancelled
+                "counterparty": f"ENT-{np.random.randint(51, 200):04d}",
+                "is_fraud": True,
+                "fraud_type": "layering",
+            })
     return records
 
 
-# ── External Data Loading ──
+# External Data 
 
 def load_external_data(filepath):
     """
@@ -385,12 +430,12 @@ def load_external_data(filepath):
     else:
         raise ValueError(f"Unsupported file format: {ext}. Use CSV or JSON.")
 
-    # ── Validate required columns ──
+    #  Validate required columns 
     missing = [col for col in REQUIRED_COLUMNS if col not in df.columns]
     if missing:
         raise ValueError(f"Missing required columns: {missing}")
 
-    # ── Fill optional columns with defaults ──
+    # Fill optional columns with defaults 
     for col, default in OPTIONAL_DEFAULTS.items():
         if col not in df.columns:
             if col == "trade_id":
@@ -400,7 +445,7 @@ def load_external_data(filepath):
             else:
                 df[col] = default
 
-    # ── Normalize types ──
+    # Normalize types 
     df["timestamp"] = pd.to_datetime(df["timestamp"])
     df["price"] = df["price"].astype(float)
     df["quantity"] = df["quantity"].astype(int)
@@ -445,7 +490,7 @@ def get_data(source="synthetic", filepath=None, n_rows=None):
         raise ValueError(f"Unknown source: {source}. Use 'synthetic' or 'file'.")
 
 
-# ── Quick test ──
+# Quick test 
 if __name__ == "__main__":
     df = get_data(source="synthetic", n_rows=10000)
     print(f"\nShape: {df.shape}")
