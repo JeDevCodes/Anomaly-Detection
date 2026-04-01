@@ -27,10 +27,9 @@ from src.investigator import (
 import config
 
 
-# ── Page Config ──
+# Page Config 
 st.set_page_config(
     page_title="Anomaly Detection System",
-    page_icon="🛡️",
     layout="wide",
 )
 
@@ -54,7 +53,7 @@ def init_state():
 init_state()
 
 
-#  SIDEBAR — DATA SOURCE
+#  SIDEBAR 
 
 st.sidebar.title("🛡️ Anomaly Detection")
 st.sidebar.markdown("---")
@@ -76,7 +75,7 @@ run_btn = st.sidebar.button("🚀 Run Pipeline", use_container_width=True)
 
 if run_btn:
     with st.spinner("Running anomaly detection pipeline..."):
-        # Step 1 — Data
+        # Data ingestion
         if source == "Upload CSV" and uploaded_file is not None:
             import tempfile, os
             tmp = tempfile.NamedTemporaryFile(delete=False, suffix=".csv")
@@ -87,13 +86,13 @@ if run_btn:
         else:
             df = get_data(source="synthetic", n_rows=n_rows)
 
-        # Step 2-4 — Features → Detect → Score
+        # Features → Detect → Score
         df = engineer_features(df)
         fm = get_feature_matrix(df)
         results = run_all_detectors(fm)
         scored_df = score_anomalies(df, results)
 
-        # Step 5 — Alerts
+        # Alerts
         alerts = generate_alerts(scored_df)
         alerts = deduplicate_alerts(alerts)
 
@@ -245,23 +244,23 @@ with tab2:
     )
 
     # Alert Detail 
-    st.subheader("Alert Detail")
-    if len(queue) > 0:
-        selected_id = st.selectbox("Select Alert", queue["alert_id"].tolist())
-        selected = queue[queue["alert_id"] == selected_id].iloc[0]
+    # st.subheader("Alert Detail")
+    # if len(queue) > 0:
+    #     selected_id = st.selectbox("Select Alert", queue["alert_id"].tolist())
+    #     selected = queue[queue["alert_id"] == selected_id].iloc[0]
 
-        dc1, dc2 = st.columns(2)
-        with dc1:
-            st.markdown(f"**Alert ID:** {selected['alert_id']}")
-            st.markdown(f"**Entity:** {selected['entity_id']}")
-            st.markdown(f"**Score:** {selected['anomaly_score']}")
-            st.markdown(f"**Risk Level:** {selected['risk_level']}")
-        with dc2:
-            st.markdown(f"**Fraud Type:** {selected['predicted_fraud_type']}")
-            st.markdown(f"**Confidence:** {selected['confidence']}/3 detectors")
-            st.markdown(f"**Status:** {selected['status']}")
+    #     dc1, dc2 = st.columns(2)
+    #     with dc1:
+    #         st.markdown(f"**Alert ID:** {selected['alert_id']}")
+    #         st.markdown(f"**Entity:** {selected['entity_id']}")
+    #         st.markdown(f"**Score:** {selected['anomaly_score']}")
+    #         st.markdown(f"**Risk Level:** {selected['risk_level']}")
+    #     with dc2:
+    #         st.markdown(f"**Fraud Type:** {selected['predicted_fraud_type']}")
+    #         st.markdown(f"**Confidence:** {selected['confidence']}/3 detectors")
+    #         st.markdown(f"**Status:** {selected['status']}")
 
-        st.markdown(f"**Explanation:** {selected['explanation']}")
+        # st.markdown(f"**Explanation:** {selected['explanation']}")
 
 
 #  TAB 3 — INVESTIGATION
@@ -275,7 +274,7 @@ with tab3:
 
     alerts = st.session_state.alerts
 
-    # ── Pending alerts (not yet resolved) ──
+    #  Pending alerts (not yet resolved) 
     pending = alerts[alerts["status"] != "RESOLVED"]
     st.write(f"**Pending alerts:** {len(pending)} | **Resolved:** {len(alerts) - len(pending)}")
 
@@ -302,7 +301,7 @@ with tab3:
         | **Type** | {selected['predicted_fraud_type']} |
         | **Confidence** | {selected['confidence']}/3 detectors |
         """)
-        st.markdown(f"**Explanation:** {selected['explanation']}")
+        # st.markdown(f"**Explanation:** {selected['explanation']}")
 
         # Resolution form
         rc1, rc2 = st.columns(2)

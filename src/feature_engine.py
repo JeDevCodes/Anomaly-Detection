@@ -198,7 +198,7 @@ def _add_market_features(df):
     df["price_vs_symbol_avg"] = (df["price"] - df["_sp_mean"]) / df["_sp_std"]
 
     # Daily volume and volatility per symbol 
-    daily = df.groupby(["symbol", "  "]).agg(
+    daily = df.groupby(["symbol", "_trade_date"]).agg(
         _d_vol=("quantity", "sum"),
         _d_pstd=("price", "std"),
     ).reset_index()

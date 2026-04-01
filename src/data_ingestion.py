@@ -303,8 +303,8 @@ def _inject_insider_trading(n, seed):
 
         # cluster trades in last hour of trading day
         time_offset = timedelta(
-            hours=np.random.uniform(5.5, 6.5),  # end of day
-            days=np.random.choice([10, 11, 12])  # cluster on specific days
+            days=int(np.random.choice([10, 11, 12])),  # cluster on specific days
+            hours=np.random.uniform(5.5, 6.5)  # end of day
         )
 
         records.append({
