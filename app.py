@@ -105,6 +105,16 @@ if run_btn:
 
     st.sidebar.success(f"✅ Processed {len(scored_df)} transactions")
 
+if st.session_state.pipeline_run:
+    close_btn = st.sidebar.button("❌ Close Pipeline", use_container_width=False)
+    if close_btn:
+        st.session_state.pipeline_run = False
+        st.session_state.scored_df = None
+        st.session_state.alerts = None
+        st.session_state.feedback = empty_feedback_log()
+        st.session_state.summary = None
+        st.sidebar.info("Pipeline closed. You can run it again with new data.")
+
 
 #  TABS
 
