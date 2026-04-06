@@ -1,0 +1,13 @@
+version: "3.8"
+
+services:
+  anomaly-detection:
+    build: .
+    container_name: anomaly
+    ports:
+      - "8501:8501"
+    volumes:
+      - ./data:/app/data
+    restart: unless-stopped
+    environment:
+      - PYTHONUNBUFFERED=1
