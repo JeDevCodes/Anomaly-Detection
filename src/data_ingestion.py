@@ -489,13 +489,3 @@ def get_data(source="synthetic", filepath=None, n_rows=None):
     else:
         raise ValueError(f"Unknown source: {source}. Use 'synthetic' or 'file'.")
 
-
-# Quick test 
-if __name__ == "__main__":
-    df = get_data(source="synthetic", n_rows=10000)
-    print(f"\nShape: {df.shape}")
-    print(f"\nColumns: {list(df.columns)}")
-    print(f"\nSample normal trade:")
-    print(df[~df["is_fraud"]].iloc[0].to_dict())
-    print(f"\nSample fraud trade:")
-    print(df[df["is_fraud"]].iloc[0].to_dict())
